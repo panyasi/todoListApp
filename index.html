@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>todolist</title>
+  <link rel="stylesheet" href="css/index.css" type="text/css">
+</head>
+<body>
+  <div class="todoapp">
+    <header class="header">
+      <h1>todos</h1>
+      <input type="text" placeholder="What needs to be done?" autofocus="autofocus" class="new-todo" v-model='newtodo' @keyup.enter="create">
+    </header>
+    <section class="main">
+      <input type="checkbox" class="toggle-all" id="toggle-all" :checked="chooseAll">
+      <label for="toggle-all" @click="toggleAll">Mark all as complete</label>
+      <ul class="todo-list">
+        <li v-for='(item,index) in show' :class="[item.completed && 'completed', item.editing && 'editing']">
+          <div class="view">
+            <input type="checkbox" class="toggle" :checked="item.completed" @click="toggleCompleted(index)">
+            <label @dblclick="editingMode(index,$event)">{{item.title}}</label>
+            <button class="destroy" @click="destroy(index)"></button>
+          </div>
+          <input class="edit" v-model="item.title" 
+            v-todo-focus="index == editeIndex"
+            @blur="doneEdit(item)" 
+            @keyup.enter="doneEdit(item)">
+        </li>
+      </ul>
+    </section>
+    <footer class="footer" v-show="todos.length">
+      <span class="todo-count">{{todos.length}}总数</span>
+      <ul class="filters">
+        <li v-for="(value,key) in filters" @click="changeFilter(key, $event)">
+          <a href="javascript:;" :class="[filter === key && 'selcted']">{{value}}</a>
+        </li>
+      </ul>
+      <button class="clear-completed" @click="clearCompleted">清除已完成</button>
+    </footer>
+  </div>
+</body>
+<script src="https://lib.baomitu.com/vue/2.5.17-beta.0/vue.min.js"></script>
+<script type="text/javascript">
+  const ENTER_KEY = 13;
+  const PAGE = new Vue({
+    el: '.todoapp',
+    data:{
+      newtodo :'',
+      editeIndex: null,
+      filter: 'all',
+      filters: {
+        'all': '全部',
+        'active': '待办',
+        'completed': '已完成',
+      },
+      todos:[{
+        title: '123',
+        completed: true,
+        editing: false
+      },{
+        title: '234',
+        completed: true,
+        editing: false
+      }]
+    },
+    computed:{
+      show(){
+        let filter = this.filter;
+        let todos = this.todos.filter(data =>{
+          if(filter === 'all'){
+            return data
+          }else if(filter === 'active'){
+            return !data.completed
+          }else if(filter === 'completed'){
+            return data.completed
+          }
+        })
+        return todos
+      },
+      chooseAll(){
+        return this.todos.every((data,index,array) => {
+          console.log(array,data.completed)
+          data.completed})
+      }
+    },
+    methods:{
+      create(){
+        let val = this.newtodo;
+        console.log(val)
+        this.todos.push({
+          title:val,
+          completed:false,
+          editing:false
+        })
+        console.log(this.todos);
+        this.newtodo ='';
+      },
+      toggleAll(){
+        let chooseAll = this.chooseAll;
+        this.todos.forEach(data => data.completed == !chooseAll)
+      },
+      toggleCompleted(index){        
+        this.todos[index]["completed"] = !this.todos[index]["completed"]
+      },
+      editingMode(index){
+        this.todos[index]["editing"] = true
+        this.editeIndex = index;
+      },
+      destroy(index){
+        this.todos.splice(index,1)
+      },
+      doneEdit(item){
+        item.editing = false;
+        this.editeIndex = null
+      },
+      changeFilter(key){
+        this.filter  = key
+      },
+      clearCompleted(){
+        let todos = this.todos.filter(data => !data.completed)
+        console.log(todos)
+        this.todos = todos
+      }
+    }
+  })
+</script>
+</html>
